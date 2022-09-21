@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2935102752785715738}
   - component: {fileID: 2935102752785715737}
-  - component: {fileID: 1095260213319882366}
+  - component: {fileID: 8593784319810106358}
   m_Layer: 0
   m_Name: HeroCamera
   m_TagString: Untagged
@@ -75,7 +75,7 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!114 &1095260213319882366
+--- !u!114 &8593784319810106358
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -87,3 +87,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a449c5c68a12ae0479e01938fb42413c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _targetTransform: {fileID: 0}
