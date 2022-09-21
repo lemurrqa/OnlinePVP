@@ -1,24 +1,29 @@
 using Mirror;
 using UnityEngine;
 
-public class Hero : NetworkBehaviour
+public class HeroInput : NetworkBehaviour
 {
     [SerializeField] private CameraRotator _cameraRotatorTemplate;
+    [SerializeField] private HeroAbilityController _abilityController;
     [SerializeField] private Transform _targetForCamera;
     [SerializeField] private float _speedMovement = 4f;
+    [SerializeField] private float _speedRotation = 5f;
     [SerializeField] private float _startPosY = 0.4f;
 
     private CameraRotator _cameraRotation;
     private HeroAnimationController _heroAnimationController;
     private IHeroMovement _heroMovement;
     private Animator _animator;
+    private Rigidbody _rigidbody;
     private float _rotationSmoothRef;
 
     private void Start()
     {
         _animator = GetComponent<Animator>();
-        _heroMovement = new HeroMovement();
+        _rigidbody = GetComponent<Rigidbody>();
+        _heroMovement = new HeroMovementDefault();
         _heroAnimationController = new HeroAnimationController(_animator);
+        _abilityController = new HeroAbilityController(_rigidbody);
 
         _cameraRotation = Instantiate(_cameraRotatorTemplate);
         _cameraRotation.Init(_targetForCamera);
@@ -31,6 +36,13 @@ public class Hero : NetworkBehaviour
         if (!isLocalPlayer)
             return;
 
+        PlayAnimationByInput();
+        if (Input.GetMouseButtonDown(0))
+        {
+            _abilityController.StartAbility(AbilityType.Blink);
+            return;
+        }
+
         var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
         Rotate(input);
@@ -38,7 +50,7 @@ public class Hero : NetworkBehaviour
 
         _cameraRotation.Rotate();
 
-        PlayAnimationByInput();
+        //PlayAnimationByInput();
     }
 
     private void Move(Vector2 input)
@@ -52,7 +64,7 @@ public class Hero : NetworkBehaviour
         if (input.normalized == Vector2.zero)
             return;
 
-        var speed = Time.deltaTime * 5f;
+        var speed = Time.deltaTime * _speedRotation;
         var aTan = Mathf.Atan2(input.normalized.x, input.normalized.y) * Mathf.Rad2Deg;
 
         var targetRotation = aTan + _cameraRotation.transform.eulerAngles.y;
@@ -62,9 +74,13 @@ public class Hero : NetworkBehaviour
 
     private void PlayAnimationByInput()
     {
-        bool isInput = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+        if (Input.GetMouseButton(0))
+        {
+            _heroAnimationController.PlayAnimationByType(HeroAnimationType.Block);
+            return;
+        }
 
-        if (isInput)
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
         {
             _heroAnimationController.PlayAnimationByType(HeroAnimationType.Run);
         }

@@ -3,10 +3,10 @@ using UnityEngine;
 
 public class InputService : MonoBehaviour
 {
-    private Hero _hero;
+    private HeroInput _hero;
     private CameraRotator _heroCamera;
 
-    public static Action<Hero> OnSetHeroToInputEvent;
+    public static Action<HeroInput> OnSetHeroToInputEvent;
 
     private void OnEnable()
     {
@@ -27,7 +27,7 @@ public class InputService : MonoBehaviour
         
     }
 
-    public void SetHero(Hero hero)
+    public void SetHero(HeroInput hero)
     {
         //_hero = hero;
         //_heroCamera = _hero.GetComponentInChildren<CameraRotator>();

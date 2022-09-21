@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class HeroMovement : IHeroMovement
+public class HeroMovementDefault : IHeroMovement
 {
     public void Move(Transform transform, Vector3 newPos)
     {
