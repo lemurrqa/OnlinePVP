@@ -16,7 +16,7 @@ public class HeroAbilityBlink : HeroAbility
 
     public override async void Run()
     {
-        _hero.SetRunningAbility(true);
+        _hero.SetUsedAbility(true);
 
         while (_time < _timeEnd)
         {
@@ -31,7 +31,7 @@ public class HeroAbilityBlink : HeroAbility
                 _startTime = 0f;
                 _hero.transform.position += Vector3.zero;
 
-                _hero.SetRunningAbility(false);
+                _hero.SetUsedAbility(false);
                 break;
             }
         }

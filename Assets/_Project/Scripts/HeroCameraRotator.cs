@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CameraRotator : MonoBehaviour
+public class HeroCameraRotator : MonoBehaviour
 {
     [SerializeField] private float _alongPlayerPosY;
     private float _angleY;

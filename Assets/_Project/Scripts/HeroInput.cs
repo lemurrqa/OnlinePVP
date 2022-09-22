@@ -3,27 +3,39 @@ using UnityEngine;
 
 public class HeroInput : NetworkBehaviour
 {
-    [SerializeField] private CameraRotator _cameraRotatorTemplate;
-    [SerializeField] private HeroAbilityController _abilityController;
-    [SerializeField] private Transform _targetForCamera;
+    [SerializeField] private Animator _animator;
+    [SerializeField] private HeroCameraRotator _heroCameraTemplate;
+    [Header("Position variables")]
     [SerializeField] private float _speedMovement = 4f;
     [SerializeField] private float _speedRotation = 5f;
     [SerializeField] private float _startPosY = 0.3f;
 
-    private CameraRotator _cameraRotation;
+    private HeroRoundController _heroRoundController;
+    private HeroCollisionController _heroCollisionController;
+    private HeroAbilityController _heroAbilityController;
     private HeroAnimationController _heroAnimationController;
-    private IHeroMovement _heroMovement;
-    private Animator _animator;
+    private HeroColorChanger _heroColorChanger;
+    private HeroCameraRotator _heroCameraRotator;
     private float _rotationSmoothRef;
-    private bool _isRunningAbility;
+    private bool _isUsedAbility;
+
+    public HeroRoundController HeroRoundController => _heroRoundController;
+    public HeroColorChanger HeroColorChanger => _heroColorChanger;
+    public bool IsUsedAbility => _isUsedAbility;
+
+    private void Awake()
+    {
+        _heroRoundController = GetComponent<HeroRoundController>();
+        _heroCollisionController = GetComponent<HeroCollisionController>();
+        _heroColorChanger = GetComponent<HeroColorChanger>();
+    }
 
     public override void OnStartLocalPlayer()
     {
-        _cameraRotation = Instantiate(_cameraRotatorTemplate);
-        _animator = GetComponent<Animator>();
-        _heroMovement = new HeroMovementDefault();
+        _heroCameraRotator = Instantiate(_heroCameraTemplate);
+
         _heroAnimationController = new HeroAnimationController(_animator);
-        _abilityController = new HeroAbilityController(this);
+        _heroAbilityController = new HeroAbilityController(this);
 
         transform.position = new Vector3(transform.position.x, _startPosY, transform.position.z);
     }
@@ -35,12 +47,15 @@ public class HeroInput : NetworkBehaviour
 
         CameraRotate();
 
-        if (_isRunningAbility)
+        if (_isUsedAbility)
+        {
+            _heroCollisionController.CollisionCheck();
             return;
+        }
 
         if (Input.GetMouseButtonDown(0))
         {
-            _abilityController.StartAbility(AbilityType.Blink);
+            _heroAbilityController.StartAbility(AbilityType.Blink);
             _heroAnimationController.PlayAnimationByType(HeroAnimationType.Block);
             return;
         }
@@ -53,14 +68,14 @@ public class HeroInput : NetworkBehaviour
         PlayAnimationByInput();
     }
 
-    public void SetRunningAbility(bool isRunning)
+    public void SetUsedAbility(bool isUsedAbility)
     {
-        _isRunningAbility = isRunning;
+        _isUsedAbility = isUsedAbility;
     }
 
     private void CameraRotate()
     {
-        _cameraRotation.Rotate(transform);
+        _heroCameraRotator.Rotate(transform);
     }
 
     private void Move(Vector2 input)
@@ -77,9 +92,10 @@ public class HeroInput : NetworkBehaviour
         var speed = Time.deltaTime * _speedRotation;
         var aTan = Mathf.Atan2(input.normalized.x, input.normalized.y) * Mathf.Rad2Deg;
 
-        var targetRotation = aTan + _cameraRotation.transform.eulerAngles.y;
+        var targetRotation = aTan + _heroCameraRotator.transform.eulerAngles.y;
 
-        transform.eulerAngles = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref _rotationSmoothRef, speed) * Vector3.up;
+        transform.eulerAngles =
+            Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref _rotationSmoothRef, speed) * Vector3.up;
     }
 
     private void PlayAnimationByInput()

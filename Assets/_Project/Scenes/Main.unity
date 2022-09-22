@@ -11001,10 +11001,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 786567486873551908, guid: a88e8c8d5a2a1ef41975f40f53fbcbe9, type: 3}
-      propertyPath: _abilities.Array.size
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 786567486873551909, guid: a88e8c8d5a2a1ef41975f40f53fbcbe9, type: 3}
       propertyPath: m_RootOrder
       value: 3
@@ -11052,14 +11048,6 @@ PrefabInstance:
     - target: {fileID: 786567486873551930, guid: a88e8c8d5a2a1ef41975f40f53fbcbe9, type: 3}
       propertyPath: m_Name
       value: HeroAbilityService
-      objectReference: {fileID: 0}
-    - target: {fileID: 1640077408265392437, guid: a88e8c8d5a2a1ef41975f40f53fbcbe9, type: 3}
-      propertyPath: sceneId
-      value: 1654564401
-      objectReference: {fileID: 0}
-    - target: {fileID: 3106293438355277813, guid: a88e8c8d5a2a1ef41975f40f53fbcbe9, type: 3}
-      propertyPath: m_Name
-      value: Blink
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a88e8c8d5a2a1ef41975f40f53fbcbe9, type: 3}
