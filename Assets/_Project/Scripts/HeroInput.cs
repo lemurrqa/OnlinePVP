@@ -8,25 +8,22 @@ public class HeroInput : NetworkBehaviour
     [SerializeField] private Transform _targetForCamera;
     [SerializeField] private float _speedMovement = 4f;
     [SerializeField] private float _speedRotation = 5f;
-    [SerializeField] private float _startPosY = 0.4f;
+    [SerializeField] private float _startPosY = 0.3f;
 
     private CameraRotator _cameraRotation;
     private HeroAnimationController _heroAnimationController;
     private IHeroMovement _heroMovement;
     private Animator _animator;
-    private Rigidbody _rigidbody;
     private float _rotationSmoothRef;
+    private bool _isRunningAbility;
 
-    private void Start()
+    public override void OnStartLocalPlayer()
     {
+        _cameraRotation = Instantiate(_cameraRotatorTemplate);
         _animator = GetComponent<Animator>();
-        _rigidbody = GetComponent<Rigidbody>();
         _heroMovement = new HeroMovementDefault();
         _heroAnimationController = new HeroAnimationController(_animator);
-        _abilityController = new HeroAbilityController(_rigidbody);
-
-        _cameraRotation = Instantiate(_cameraRotatorTemplate);
-        _cameraRotation.Init(_targetForCamera);
+        _abilityController = new HeroAbilityController(this);
 
         transform.position = new Vector3(transform.position.x, _startPosY, transform.position.z);
     }
@@ -36,10 +33,15 @@ public class HeroInput : NetworkBehaviour
         if (!isLocalPlayer)
             return;
 
-        PlayAnimationByInput();
+        CameraRotate();
+
+        if (_isRunningAbility)
+            return;
+
         if (Input.GetMouseButtonDown(0))
         {
             _abilityController.StartAbility(AbilityType.Blink);
+            _heroAnimationController.PlayAnimationByType(HeroAnimationType.Block);
             return;
         }
 
@@ -48,15 +50,23 @@ public class HeroInput : NetworkBehaviour
         Rotate(input);
         Move(input);
 
-        _cameraRotation.Rotate();
+        PlayAnimationByInput();
+    }
 
-        //PlayAnimationByInput();
+    public void SetRunningAbility(bool isRunning)
+    {
+        _isRunningAbility = isRunning;
+    }
+
+    private void CameraRotate()
+    {
+        _cameraRotation.Rotate(transform);
     }
 
     private void Move(Vector2 input)
     {
         var newPosition = transform.forward * (_speedMovement * input.normalized.sqrMagnitude) * Time.deltaTime;
-        _heroMovement.Move(transform, newPosition);
+        transform.Translate(newPosition, Space.World);
     }
 
     private void Rotate(Vector2 input)
@@ -74,12 +84,6 @@ public class HeroInput : NetworkBehaviour
 
     private void PlayAnimationByInput()
     {
-        if (Input.GetMouseButton(0))
-        {
-            _heroAnimationController.PlayAnimationByType(HeroAnimationType.Block);
-            return;
-        }
-
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
         {
             _heroAnimationController.PlayAnimationByType(HeroAnimationType.Run);

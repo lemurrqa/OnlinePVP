@@ -10,6 +10,6 @@ public class HeroAblilityData : ScriptableObject
     public class Data
     {
         public AbilityType type;
-        public int distance;
+        public float distance;
     }
 }

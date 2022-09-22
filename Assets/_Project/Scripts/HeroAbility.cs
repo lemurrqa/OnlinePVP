@@ -1,23 +1,20 @@
 ﻿using UnityEngine;
 
-public abstract class Ability : MonoBehaviour
+public class HeroAbility
 {
     [SerializeField] protected AbilityType _type;
 
     protected HeroAblilityData.Data _data;
-    protected Rigidbody _rigidbody;
-
-    public AbilityType Type => _type;
-    public HeroAblilityData.Data Data => _data;
+    protected HeroInput _hero;
 
     public void SetData(HeroAblilityData.Data data)
     {
         _data = data;
     }
 
-    public virtual void Init(Rigidbody rigidbody)
+    public virtual void Init(HeroInput hero)
     {
-        _rigidbody = rigidbody;
+        _hero = hero;
     }
 
     public virtual void ResetAbility()

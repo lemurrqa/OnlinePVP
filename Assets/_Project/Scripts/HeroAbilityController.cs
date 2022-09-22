@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public enum AbilityType
 {
     Blink
@@ -7,23 +5,19 @@ public enum AbilityType
 
 public class HeroAbilityController
 {
-    private Rigidbody _rigidbody;
+    private HeroInput _hero;
 
-    public HeroAbilityController(Rigidbody rigidbody)
+    public HeroAbilityController(HeroInput hero)
     {
-        _rigidbody = rigidbody;
+        _hero = hero;
     }
 
     public void StartAbility(AbilityType abilityType)
     {
-        var ability = AbilityService.GetAbilityFunction?.Invoke(abilityType);
-        StartAbility(ability);
-    }
+        var ability = HeroAbilityService.GetAbilityFunction?.Invoke(abilityType);
 
-    private void StartAbility(Ability ability)
-    {
         ability.ResetAbility();
-        ability.Init(_rigidbody);
+        ability.Init(_hero);
         ability.Run();
     }
 }

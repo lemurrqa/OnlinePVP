@@ -27,7 +27,7 @@ public class HeroAnimationController
                 _animator.Play("Idle");
                 break;
             case HeroAnimationType.Block:
-                _animator.Play("Block");
+                _animator.Play("Fight2");
                 break;
             default:
                 break;
