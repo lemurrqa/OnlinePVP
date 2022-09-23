@@ -70,6 +70,7 @@ public class HeroInput : NetworkBehaviour
 
     public void SetUsedAbility(bool isUsedAbility)
     {
+        _heroCollisionController.CanFinded = !isUsedAbility;
         _isUsedAbility = isUsedAbility;
     }
 
