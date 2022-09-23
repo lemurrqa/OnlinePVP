@@ -1,7 +1,7 @@
 using Mirror;
 using UnityEngine;
 
-public class HeroInput : NetworkBehaviour
+public class Hero : NetworkBehaviour
 {
     [SerializeField] private Animator _animator;
     [SerializeField] private HeroCameraRotator _heroCameraTemplate;
@@ -14,28 +14,37 @@ public class HeroInput : NetworkBehaviour
     private HeroCollisionController _heroCollisionController;
     private HeroAbilityController _heroAbilityController;
     private HeroAnimationController _heroAnimationController;
+    private HeroUIController _heroUIController;
     private HeroColorChanger _heroColorChanger;
     private HeroCameraRotator _heroCameraRotator;
     private float _rotationSmoothRef;
     private bool _isUsedAbility;
+    private bool _isInvulnerable;
 
     public HeroRoundController HeroRoundController => _heroRoundController;
+    public HeroUIController HeroUIController => _heroUIController;
     public HeroColorChanger HeroColorChanger => _heroColorChanger;
     public bool IsUsedAbility => _isUsedAbility;
+    public bool IsInvulnerable => _isInvulnerable;
+
 
     private void Awake()
     {
-        _heroRoundController = GetComponent<HeroRoundController>();
-        _heroCollisionController = GetComponent<HeroCollisionController>();
+        _heroUIController = GetComponent<HeroUIController>();
         _heroColorChanger = GetComponent<HeroColorChanger>();
+
+        _heroUIController.Init(this);
+        _heroColorChanger.Init(this);
     }
 
     public override void OnStartLocalPlayer()
     {
         _heroCameraRotator = Instantiate(_heroCameraTemplate);
 
-        _heroAnimationController = new HeroAnimationController(_animator);
+        _heroRoundController = new HeroRoundController(this);
+        _heroCollisionController = new HeroCollisionController(this);
         _heroAbilityController = new HeroAbilityController(this);
+        _heroAnimationController = new HeroAnimationController(_animator);
 
         transform.position = new Vector3(transform.position.x, _startPosY, transform.position.z);
     }
@@ -64,13 +73,18 @@ public class HeroInput : NetworkBehaviour
 
         Rotate(input);
         Move(input);
+        PlayAnimationByInput(input);
+    }
 
-        PlayAnimationByInput();
+    public void SetInvulnerable(bool isInvulnerable)
+    {
+        _isInvulnerable = isInvulnerable;
     }
 
     public void SetUsedAbility(bool isUsedAbility)
     {
-        _heroCollisionController.CanFinded = !isUsedAbility;
+        _heroCollisionController.CmdSetCheckCollision(isUsedAbility);
+
         _isUsedAbility = isUsedAbility;
     }
 
@@ -99,15 +113,11 @@ public class HeroInput : NetworkBehaviour
             Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref _rotationSmoothRef, speed) * Vector3.up;
     }
 
-    private void PlayAnimationByInput()
+    private void PlayAnimationByInput(Vector2 input)
     {
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
-        {
+        if (input != Vector2.zero)
             _heroAnimationController.PlayAnimationByType(HeroAnimationType.Run);
-        }
         else
-        {
             _heroAnimationController.PlayAnimationByType(HeroAnimationType.Idle);
-        }
     }
 }

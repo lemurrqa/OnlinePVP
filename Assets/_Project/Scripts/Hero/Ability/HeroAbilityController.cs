@@ -5,9 +5,9 @@ public enum AbilityType
 
 public class HeroAbilityController
 {
-    private HeroInput _hero;
+    private Hero _hero;
 
-    public HeroAbilityController(HeroInput hero)
+    public HeroAbilityController(Hero hero)
     {
         _hero = hero;
     }
