@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneUIController : NetworkBehaviour
+public class SceneUIController : Singleton<SceneUIController>
 {
     [SerializeField] private PlayerInfoUI _heroInfoTemplate;
     [SerializeField] private Transform _heroInfoParent;

@@ -11,9 +11,6 @@ public class HeroColorChanger : NetworkBehaviour
     private Hero _hero;
     private Material _previousMaterial;
 
-    //[SyncVar(hook = nameof(OnColorChanged))]
-    //private bool IsColorChanged;
-
     public void Init(Hero hero)
     {
         _hero = hero;
@@ -43,8 +40,6 @@ public class HeroColorChanger : NetworkBehaviour
     private void SetColorDefault()
     {
         _meshRenderer.sharedMaterial = _previousMaterial;
-
-        //IsColorChanged = false;
         _hero.IsInvulnerable = false;
     }
 
@@ -54,12 +49,4 @@ public class HeroColorChanger : NetworkBehaviour
 
         SetColorDefault();
     }
-
-    //private void OnColorChanged(bool oldBool, bool newColorChanged)
-    //{
-    //    if (IsColorChanged)
-    //        SetColorNew();
-    //    else
-    //        SetColorDefault();
-    //}
 }

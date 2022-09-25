@@ -22,7 +22,6 @@ public class Hero : NetworkBehaviour
     private HeroCollisionController _collisionController;
     private HeroAbilityController _abilityController;
     private HeroAnimationController _animationController;
-    private HeroUIController _UIController;
     private HeroColorChanger _colorChanger;
     private HeroCameraRotator _heroCameraRotator;
     private SceneUIController _sceneUIController;
@@ -30,12 +29,11 @@ public class Hero : NetworkBehaviour
     private float _rotationSmoothRef;
 
     public HeroScoreController ScoreController => _scoreController;
-    public HeroUIController UIController => _UIController;
     public HeroColorChanger ColorChanger => _colorChanger;
     public SceneUIController SceneUIController => _sceneUIController;
 
-    //[SyncVar(hook = nameof(OnChangedScore))]
-    //public int score = 0;
+    [SyncVar(hook = nameof(OnNicknameChanged))]
+    public string Nickname;
 
     [SyncVar]
     public bool IsUsedAbility;
@@ -54,7 +52,6 @@ public class Hero : NetworkBehaviour
     private void Awake()
     {
         _sceneUIController = FindObjectOfType<SceneUIController>(); //sorry,it wont happen again
-        _UIController = GetComponent<HeroUIController>();
         _colorChanger = GetComponent<HeroColorChanger>();
         _collisionController = GetComponent<HeroCollisionController>();
         _scoreController = GetComponent<HeroScoreController>();
@@ -64,7 +61,6 @@ public class Hero : NetworkBehaviour
     {
         _heroInfoUI = SceneUIController.SpawnAndGetInfoPanel();
 
-        _UIController.Init(this);
         _colorChanger.Init(this);
         _collisionController.Init(this);
         _scoreController.Init(this);
@@ -76,10 +72,10 @@ public class Hero : NetworkBehaviour
         OnUsingAbilityEvent = SetUseAbility;
         OnNicknameChangedEvent = _heroInfoUI.OnPlayerNicknameChanged;
         OnScoreChangedEvent = _heroInfoUI.OnPlayerScoreChanged;
-        
-        _UIController.CmdSetName("Player" + UnityEngine.Random.Range(100, 999));
 
-        OnNicknameChangedEvent?.Invoke(UIController.Nickname);
+        CmdSetName("Player" + UnityEngine.Random.Range(100, 999));
+
+        OnNicknameChangedEvent?.Invoke(Nickname);
         transform.position = new Vector3(transform.position.x, _startPosY, transform.position.z);
     }
 
@@ -119,7 +115,7 @@ public class Hero : NetworkBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             _abilityController.StartAbility(AbilityType.Blink);
-            _animationController.PlayAnimationByType(HeroAnimationType.Block);
+            PlayAnimationByType(HeroAnimationType.Block);
             return;
         }
 
@@ -147,15 +143,13 @@ public class Hero : NetworkBehaviour
 
     public void SetUseAbility(bool canUseAbility)
     {
-        //_collisionController.CanCheckCollision(true);
-
         IsUsedAbility = canUseAbility;
     }
 
     public void SetWinnedStatus(bool isWin)
     {
         IsWin = isWin;
-        SceneUIController.CompleteRound(UIController.Nickname);
+        SceneUIController.CompleteRound(Nickname);
     }
 
     [Command]
@@ -169,7 +163,6 @@ public class Hero : NetworkBehaviour
         if (_heroCameraRotator == null)
             return;
 
-        _UIController.SetRotationTextsFromCamera(_heroCameraRotator.transform.eulerAngles);
         _heroCameraRotator.Rotate(transform);
     }
 
@@ -193,29 +186,19 @@ public class Hero : NetworkBehaviour
             Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref _rotationSmoothRef, speed) * Vector3.up;
     }
 
-    //private void PlayAnimationByInput(Vector2 input)
-    //{
-    //    if (input != Vector2.zero)
-    //    {
-    //        _animationController.PlayAnimationByType(HeroAnimationType.Run);
-    //        return;
-    //    }
-
-    //    _animationController.PlayAnimationByType(HeroAnimationType.Idle);
-    //}
-
     private void PlayAnimationByType(HeroAnimationType typeAnimation)
     {
         _animationController.PlayAnimationByType(typeAnimation);
     }
 
-    //private void OnChangedUsedAbility(bool old, bool newUsedAbility)
-    //{
-    //    _collisionController.CanCheckCollision(true);
-    //}
+    [Command]
+    public void CmdSetName(string name)
+    {
+        Nickname = name;
+    }
 
-    //private void OnChangedScore(int oldScore, int newScore)
-    //{
-    //    OnScoreChangedEvent?.Invoke(score);
-    //}
+    private void OnNicknameChanged(string oldName, string newName)
+    {
+        OnNicknameChangedEvent?.Invoke(Nickname);
+    }
 }
