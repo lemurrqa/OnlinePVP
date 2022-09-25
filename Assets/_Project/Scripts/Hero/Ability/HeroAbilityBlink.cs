@@ -16,7 +16,7 @@ public class HeroAbilityBlink : HeroAbility
 
     public override async void Run()
     {
-        _hero.SetUsedAbility(true);
+        _hero.OnUsingAbilityEvent?.Invoke(true);
 
         while (_time < _timeEnd)
         {
@@ -24,14 +24,15 @@ public class HeroAbilityBlink : HeroAbility
 
             _hero.transform.position += GetNewPosition();
 
-            _time += 0.012f;
+            _time += 0.014f;
 
             if (_time >= _timeEnd)
             {
                 _startTime = 0f;
                 _hero.transform.position += Vector3.zero;
 
-                _hero.SetUsedAbility(false);
+                _hero.OnUsingAbilityEvent?.Invoke(false);
+
                 break;
             }
         }
@@ -44,8 +45,8 @@ public class HeroAbilityBlink : HeroAbility
 
     private Vector3 GetNewPosition()
     {
-        var x = _hero.transform.forward.x * _data.distance * Time.deltaTime;
-        var y = _hero.transform.forward.z * _data.distance * Time.deltaTime;
+        var x = _hero.transform.forward.x * _data.distance * Time.fixedDeltaTime;
+        var y = _hero.transform.forward.z * _data.distance * Time.fixedDeltaTime;
 
         return new Vector3(x, 0f, y);
     }

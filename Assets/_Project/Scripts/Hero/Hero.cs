@@ -1,5 +1,13 @@
 using Mirror;
+using System;
 using UnityEngine;
+
+public enum HeroState
+{
+    Idle,
+    Invulnerable,
+    UsedAbility
+}
 
 public class Hero : NetworkBehaviour
 {
@@ -10,43 +18,89 @@ public class Hero : NetworkBehaviour
     [SerializeField] private float _speedRotation = 5f;
     [SerializeField] private float _startPosY = 0.3f;
 
-    private HeroRoundController _heroRoundController;
-    private HeroCollisionController _heroCollisionController;
-    private HeroAbilityController _heroAbilityController;
-    private HeroAnimationController _heroAnimationController;
-    private HeroUIController _heroUIController;
-    private HeroColorChanger _heroColorChanger;
+    private HeroScoreController _scoreController;
+    private HeroCollisionController _collisionController;
+    private HeroAbilityController _abilityController;
+    private HeroAnimationController _animationController;
+    private HeroUIController _UIController;
+    private HeroColorChanger _colorChanger;
     private HeroCameraRotator _heroCameraRotator;
+    private SceneUIController _sceneUIController;
+    private PlayerInfoUI _heroInfoUI;
     private float _rotationSmoothRef;
-    private bool _isUsedAbility;
-    private bool _isInvulnerable;
 
-    public HeroRoundController HeroRoundController => _heroRoundController;
-    public HeroUIController HeroUIController => _heroUIController;
-    public HeroColorChanger HeroColorChanger => _heroColorChanger;
-    public bool IsUsedAbility => _isUsedAbility;
-    public bool IsInvulnerable => _isInvulnerable;
+    public HeroScoreController ScoreController => _scoreController;
+    public HeroUIController UIController => _UIController;
+    public HeroColorChanger ColorChanger => _colorChanger;
+    public SceneUIController SceneUIController => _sceneUIController;
 
+    //[SyncVar(hook = nameof(OnChangedScore))]
+    //public int score = 0;
+
+    [SyncVar]
+    public bool IsUsedAbility;
+
+    [SyncVar]
+    public bool IsWin;
+
+    [SyncVar]
+    public bool IsInvulnerable;
+
+    public Action OnColorChangedEvent;
+    public Action<bool> OnUsingAbilityEvent;
+    public Action<int> OnScoreChangedEvent;
+    public Action<string> OnNicknameChangedEvent;
 
     private void Awake()
     {
-        _heroUIController = GetComponent<HeroUIController>();
-        _heroColorChanger = GetComponent<HeroColorChanger>();
+        _sceneUIController = FindObjectOfType<SceneUIController>(); //sorry,it wont happen again
+        _UIController = GetComponent<HeroUIController>();
+        _colorChanger = GetComponent<HeroColorChanger>();
+        _collisionController = GetComponent<HeroCollisionController>();
+        _scoreController = GetComponent<HeroScoreController>();
+    }
 
-        _heroUIController.Init(this);
-        _heroColorChanger.Init(this);
+    public override void OnStartClient()
+    {
+        _heroInfoUI = SceneUIController.SpawnAndGetInfoPanel();
+
+        _UIController.Init(this);
+        _colorChanger.Init(this);
+        _collisionController.Init(this);
+        _scoreController.Init(this);
+
+        _animationController = new HeroAnimationController(_animator);
+        _abilityController = new HeroAbilityController(this);
+
+        OnColorChangedEvent = ColorChanger.ChangeColor;
+        OnUsingAbilityEvent = SetUseAbility;
+        OnNicknameChangedEvent = _heroInfoUI.OnPlayerNicknameChanged;
+        OnScoreChangedEvent = _heroInfoUI.OnPlayerScoreChanged;
+        
+        _UIController.CmdSetName("Player" + UnityEngine.Random.Range(100, 999));
+
+        OnNicknameChangedEvent?.Invoke(UIController.Nickname);
+        transform.position = new Vector3(transform.position.x, _startPosY, transform.position.z);
     }
 
     public override void OnStartLocalPlayer()
     {
         _heroCameraRotator = Instantiate(_heroCameraTemplate);
 
-        _heroRoundController = new HeroRoundController(this);
-        _heroCollisionController = new HeroCollisionController(this);
-        _heroAbilityController = new HeroAbilityController(this);
-        _heroAnimationController = new HeroAnimationController(_animator);
+        _heroInfoUI.SetLocalPlayer();
+    }
 
-        transform.position = new Vector3(transform.position.x, _startPosY, transform.position.z);
+    public override void OnStopClient()
+    {
+        ScoreController.ResetScore();
+
+        OnColorChangedEvent = null;
+        OnUsingAbilityEvent = null;
+        OnNicknameChangedEvent = null;
+        OnScoreChangedEvent = null;
+
+        if (_heroInfoUI != null)
+            _heroInfoUI.Hide();
     }
 
     private void Update()
@@ -54,18 +108,18 @@ public class Hero : NetworkBehaviour
         if (!isLocalPlayer)
             return;
 
+        if (IsWin)
+            return;
+
         CameraRotate();
 
-        if (_isUsedAbility)
-        {
-            _heroCollisionController.CollisionCheck();
+        if (IsUsedAbility)
             return;
-        }
 
         if (Input.GetMouseButtonDown(0))
         {
-            _heroAbilityController.StartAbility(AbilityType.Blink);
-            _heroAnimationController.PlayAnimationByType(HeroAnimationType.Block);
+            _abilityController.StartAbility(AbilityType.Blink);
+            _animationController.PlayAnimationByType(HeroAnimationType.Block);
             return;
         }
 
@@ -73,23 +127,49 @@ public class Hero : NetworkBehaviour
 
         Rotate(input);
         Move(input);
-        PlayAnimationByInput(input);
+
+        if (input != Vector2.zero)
+            PlayAnimationByType(HeroAnimationType.Run);
+        else
+            PlayAnimationByType(HeroAnimationType.Idle);
     }
 
-    public void SetInvulnerable(bool isInvulnerable)
+    public void ScoreIncrement()
     {
-        _isInvulnerable = isInvulnerable;
+        ScoreController.ScoreIncrement();
     }
 
-    public void SetUsedAbility(bool isUsedAbility)
+    [Command]
+    public void CmdScoreIncrement()
     {
-        _heroCollisionController.CmdSetCheckCollision(isUsedAbility);
+        ScoreController.ScoreIncrement();
+    }
 
-        _isUsedAbility = isUsedAbility;
+    public void SetUseAbility(bool canUseAbility)
+    {
+        //_collisionController.CanCheckCollision(true);
+
+        IsUsedAbility = canUseAbility;
+    }
+
+    public void SetWinnedStatus(bool isWin)
+    {
+        IsWin = isWin;
+        SceneUIController.CompleteRound(UIController.Nickname);
+    }
+
+    [Command]
+    public void CmdPlayerWinnedStatus(bool isWin)
+    {
+        SetWinnedStatus(isWin);
     }
 
     private void CameraRotate()
     {
+        if (_heroCameraRotator == null)
+            return;
+
+        _UIController.SetRotationTextsFromCamera(_heroCameraRotator.transform.eulerAngles);
         _heroCameraRotator.Rotate(transform);
     }
 
@@ -113,11 +193,29 @@ public class Hero : NetworkBehaviour
             Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref _rotationSmoothRef, speed) * Vector3.up;
     }
 
-    private void PlayAnimationByInput(Vector2 input)
+    //private void PlayAnimationByInput(Vector2 input)
+    //{
+    //    if (input != Vector2.zero)
+    //    {
+    //        _animationController.PlayAnimationByType(HeroAnimationType.Run);
+    //        return;
+    //    }
+
+    //    _animationController.PlayAnimationByType(HeroAnimationType.Idle);
+    //}
+
+    private void PlayAnimationByType(HeroAnimationType typeAnimation)
     {
-        if (input != Vector2.zero)
-            _heroAnimationController.PlayAnimationByType(HeroAnimationType.Run);
-        else
-            _heroAnimationController.PlayAnimationByType(HeroAnimationType.Idle);
+        _animationController.PlayAnimationByType(typeAnimation);
     }
+
+    //private void OnChangedUsedAbility(bool old, bool newUsedAbility)
+    //{
+    //    _collisionController.CanCheckCollision(true);
+    //}
+
+    //private void OnChangedScore(int oldScore, int newScore)
+    //{
+    //    OnScoreChangedEvent?.Invoke(score);
+    //}
 }

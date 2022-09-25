@@ -11,24 +11,55 @@ public class HeroColorChanger : NetworkBehaviour
     private Hero _hero;
     private Material _previousMaterial;
 
+    //[SyncVar(hook = nameof(OnColorChanged))]
+    //private bool IsColorChanged;
+
     public void Init(Hero hero)
     {
         _hero = hero;
     }
 
-    public void ChangeColorFromDamage()
+    public void ChangeColor()
     {
+        _hero.IsInvulnerable = true;
+
+        _previousMaterial = _meshRenderer.sharedMaterial;
+        _meshRenderer.sharedMaterial = _changedMaterial;
+
         StartCoroutine(ChangedColorRoutine());
+    }
+
+    [Command]
+    public void CmdChangeColor()
+    {
+        _hero.IsInvulnerable = true;
+
+        _previousMaterial = _meshRenderer.sharedMaterial;
+        _meshRenderer.sharedMaterial = _changedMaterial;
+
+        StartCoroutine(ChangedColorRoutine());
+    }
+
+    private void SetColorDefault()
+    {
+        _meshRenderer.sharedMaterial = _previousMaterial;
+
+        //IsColorChanged = false;
+        _hero.IsInvulnerable = false;
     }
 
     private IEnumerator ChangedColorRoutine()
     {
-        _previousMaterial = _meshRenderer.sharedMaterial;
-        _meshRenderer.sharedMaterial = _changedMaterial;
-
         yield return new WaitForSeconds(_changeTimeInSeconds);
 
-        _meshRenderer.sharedMaterial = _previousMaterial;
-        _hero.SetInvulnerable(false);
+        SetColorDefault();
     }
+
+    //private void OnColorChanged(bool oldBool, bool newColorChanged)
+    //{
+    //    if (IsColorChanged)
+    //        SetColorNew();
+    //    else
+    //        SetColorDefault();
+    //}
 }

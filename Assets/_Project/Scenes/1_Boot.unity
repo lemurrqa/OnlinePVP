@@ -237,8 +237,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6442dc8070ceb41f094e44de0bf87274, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  offsetX: 100
-  offsetY: 100
+  offsetX: 50
+  offsetY: 50
 --- !u!114 &627639478
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -284,11 +284,11 @@ MonoBehaviour:
   runInBackground: 1
   autoStartServerBuild: 1
   serverTickRate: 30
-  offlineScene: Assets/_Project/Scenes/1_Offline.unity
+  offlineScene: Assets/_Project/Scenes/1_Boot.unity
   onlineScene: Assets/_Project/Scenes/2_Lobby.unity
   transport: {fileID: 627639478}
   networkAddress: localhost
-  maxConnections: 10
+  maxConnections: 5
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 5125483312446499225, guid: 2f56008d0606b8549b1996df9003cec9, type: 3}
   autoCreatePlayer: 1
@@ -315,4 +315,47 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1210725616
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1210725618}
+  - component: {fileID: 1210725617}
+  m_Layer: 0
+  m_Name: CursorShower
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1210725617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210725616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eeded07cb1b05b349b37333dc3de9803, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1210725618
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210725616}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
