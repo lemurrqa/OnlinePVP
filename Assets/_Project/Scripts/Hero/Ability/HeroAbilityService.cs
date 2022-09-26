@@ -2,6 +2,11 @@ using System;
 using System.Linq;
 using UnityEngine;
 
+public enum AbilityType
+{
+    Blink
+}
+
 public class HeroAbilityService : MonoBehaviour
 {
     [SerializeField] private HeroAblilityData _abilityData;

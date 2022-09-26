@@ -4,20 +4,20 @@ using UnityEngine;
 
 public class ConnectRoomUI : MonoBehaviour
 {
-    [SerializeField] private TMP_InputField _ipInputField;
     [SerializeField] private Canvas _connectCanvas;
+    [SerializeField] private TMP_InputField _ipInputField;
 
-    private NetworkManager _manager;
+    private NetworkManager _networkManager;
 
     private void Awake()
     {
-        _manager = GetComponent<NetworkManager>();
+        _networkManager = GetComponent<NetworkManager>();
     }
 
     public void StartHost()
     {
         _connectCanvas.gameObject.SetActive(false);
-        _manager.StartHost();
+        _networkManager.StartHost();
     }
 
     public void StartClient()
@@ -25,9 +25,9 @@ public class ConnectRoomUI : MonoBehaviour
         if (string.IsNullOrEmpty(_ipInputField.text))
             return;
 
-        _manager.networkAddress = _ipInputField.text;
+        _networkManager.networkAddress = _ipInputField.text;
         _connectCanvas.gameObject.SetActive(false);
 
-        _manager.StartClient();
+        _networkManager.StartClient();
     }
 }

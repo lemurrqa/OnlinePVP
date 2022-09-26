@@ -7,14 +7,6 @@ public class PlayerInfoUI : NetworkBehaviour
     [SerializeField] private TMP_Text _playerNicknameText;
     [SerializeField] private TMP_Text _playerScoreText;
 
-    //public bool IsActive = false;
-
-    //public void Hide()
-    //{
-    //    IsActive = false;
-    //    gameObject.SetActive(false);
-    //}
-
     public void SetLocalPlayer()
     {
         _playerNicknameText.color = Color.green;

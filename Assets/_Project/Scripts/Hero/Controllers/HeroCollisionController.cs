@@ -24,24 +24,14 @@ public class HeroCollisionController : NetworkBehaviour
                 return;
 
             if (_hero.isServer)
-            {
                 _hero.ScoreIncrement();
-            }
             else
-            {
                 _hero.CmdScoreIncrement();
 
-            }
-
             if (targetHero.isServer)
-            {
                 targetHero.ChangeColor();
-            }
             else
-            {
                 targetHero.CmdChangeColor();
-            }
-
         }
     }
 }

@@ -4,7 +4,7 @@ public enum HeroAnimationType
 {
     Run,
     Idle,
-    Block
+    Blink
 }
 
 public class HeroAnimationController
@@ -26,7 +26,7 @@ public class HeroAnimationController
             case HeroAnimationType.Idle:
                 _animator.Play("Idle");
                 break;
-            case HeroAnimationType.Block:
+            case HeroAnimationType.Blink:
                 _animator.Play("Fight2");
                 break;
             default:

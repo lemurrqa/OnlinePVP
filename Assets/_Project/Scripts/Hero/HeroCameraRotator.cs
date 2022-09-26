@@ -10,8 +10,6 @@ public class HeroCameraRotator : MonoBehaviour
     private void Start()
     {
         _angleY = transform.rotation.y;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
     public void Rotate(Transform target)

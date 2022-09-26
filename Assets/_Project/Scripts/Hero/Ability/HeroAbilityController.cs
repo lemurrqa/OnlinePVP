@@ -1,8 +1,3 @@
-public enum AbilityType
-{
-    Blink
-}
-
 public class HeroAbilityController
 {
     private Hero _hero;

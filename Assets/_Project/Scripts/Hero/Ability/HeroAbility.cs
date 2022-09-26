@@ -17,13 +17,7 @@ public class HeroAbility
         _hero = hero;
     }
 
-    public virtual void ResetAbility()
-    {
+    public virtual void ResetAbility() { }
 
-    }
-
-    public virtual void Run()
-    {
-
-    }
+    public virtual void Run() { }
 }

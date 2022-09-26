@@ -45,6 +45,37 @@ public class Hero : NetworkBehaviour
         _heroUIController.Init(this);
     }
 
+    private void Update()
+    {
+        if (IsStoppedInput)
+            return;
+
+        if (!isLocalPlayer)
+            return;
+
+        CameraRotate();
+
+        if (IsUsedAbility)
+            return;
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            _abilityController.StartAbility(AbilityType.Blink);
+            PlayAnimationByType(HeroAnimationType.Blink);
+            return;
+        }
+
+        var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+
+        Rotate(input);
+        Move(input);
+
+        if (input != Vector2.zero)
+            PlayAnimationByType(HeroAnimationType.Run);
+        else
+            PlayAnimationByType(HeroAnimationType.Idle);
+    }
+
     public override void OnStartClient()
     {
         CmdSetName("Player" + UnityEngine.Random.Range(100, 999));
@@ -75,37 +106,6 @@ public class Hero : NetworkBehaviour
         _scoreController.ResetScore();
 
         OnUsingAbilityEvent = null;
-    }
-
-    private void Update()
-    {
-        if (IsStoppedInput)
-            return;
-
-        if (!isLocalPlayer)
-            return;
-
-        CameraRotate();
-
-        if (IsUsedAbility)
-            return;
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            _abilityController.StartAbility(AbilityType.Blink);
-            PlayAnimationByType(HeroAnimationType.Block);
-            return;
-        }
-
-        var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-
-        Rotate(input);
-        Move(input);
-
-        if (input != Vector2.zero)
-            PlayAnimationByType(HeroAnimationType.Run);
-        else
-            PlayAnimationByType(HeroAnimationType.Idle);
     }
 
     public void ScoreIncrement()
