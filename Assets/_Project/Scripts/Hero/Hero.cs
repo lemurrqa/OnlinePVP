@@ -2,13 +2,6 @@ using Mirror;
 using System;
 using UnityEngine;
 
-public enum HeroState
-{
-    Idle,
-    Invulnerable,
-    UsedAbility
-}
-
 public class Hero : NetworkBehaviour
 {
     [SerializeField] private Animator _animator;
@@ -22,40 +15,42 @@ public class Hero : NetworkBehaviour
     private HeroCollisionController _collisionController;
     private HeroAbilityController _abilityController;
     private HeroAnimationController _animationController;
+    private HeroUIController _heroUIController;
     private HeroColorChanger _colorChanger;
     private HeroCameraRotator _heroCameraRotator;
-    private PlayerInfoUI _heroInfoUI;
     private float _rotationSmoothRef;
 
     public HeroScoreController ScoreController => _scoreController;
+    public HeroUIController HeroUIController => _heroUIController;
     public HeroColorChanger ColorChanger => _colorChanger;
-
-    [SyncVar(hook = nameof(OnNicknameChanged))]
-    public string Nickname;
 
     [SyncVar]
     public bool IsUsedAbility;
 
     [SyncVar]
-    public bool IsWin;
-
-    [SyncVar]
     public bool IsInvulnerable;
 
+    [SyncVar]
+    public bool IsStoppedInput;
+
     public Action<bool> OnUsingAbilityEvent;
-    public Action<int> OnScoreChangedEvent;
-    public Action<string> OnNicknameChangedEvent;
 
     private void Awake()
     {
         _colorChanger = GetComponent<HeroColorChanger>();
         _collisionController = GetComponent<HeroCollisionController>();
         _scoreController = GetComponent<HeroScoreController>();
+        _heroUIController = GetComponent<HeroUIController>();
+
+        _heroUIController.Init(this);
     }
 
     public override void OnStartClient()
     {
-        _heroInfoUI = SceneUIService.Instance.SpawnAndGetInfoPanel();
+        CmdSetName("Player" + UnityEngine.Random.Range(100, 999));
+
+        _heroUIController.StartClient();
+
         _colorChanger.Init(this);
         _collisionController.Init(this);
         _scoreController.Init(this);
@@ -64,40 +59,27 @@ public class Hero : NetworkBehaviour
         _abilityController = new HeroAbilityController(this);
 
         OnUsingAbilityEvent = SetUseAbility;
-        OnNicknameChangedEvent = _heroInfoUI.OnPlayerNicknameChanged;
-        OnScoreChangedEvent = _heroInfoUI.OnPlayerScoreChanged;
 
-        CmdSetName("Player" + UnityEngine.Random.Range(100, 999));
-
-        OnNicknameChangedEvent?.Invoke(Nickname);
         transform.position = new Vector3(transform.position.x, _startPosY, transform.position.z);
     }
 
     public override void OnStartLocalPlayer()
     {
+        _heroUIController.StartLocalPlayer();
         _heroCameraRotator = Instantiate(_heroCameraTemplate);
-        if (_heroInfoUI != null)
-            _heroInfoUI.SetLocalPlayer();
     }
 
     public override void OnStopClient()
     {
-        ScoreController.ResetScore();
+        _heroUIController.StopClient();
+        _scoreController.ResetScore();
 
         OnUsingAbilityEvent = null;
-        OnNicknameChangedEvent = null;
-        OnScoreChangedEvent = null;
-
-        if (_heroInfoUI != null)
-        {
-            Destroy(_heroInfoUI.gameObject);
-            NetworkServer.Destroy(_heroInfoUI.gameObject);
-        }
     }
 
     private void Update()
     {
-        if (IsWin)
+        if (IsStoppedInput)
             return;
 
         if (!isLocalPlayer)
@@ -136,15 +118,10 @@ public class Hero : NetworkBehaviour
         ColorChanger.ChangeMaterial();
     }
 
-    private void SetUseAbility(bool canUseAbility)
+    public void SetWinnedStatus()
     {
-        IsUsedAbility = canUseAbility;
-    }
-
-    public void SetWinnedStatus(bool isWin)
-    {
-        IsWin = isWin;
-        SceneUIService.Instance.CompleteRound(Nickname);
+        RpcStopPlayerInput();
+        SceneUIService.Instance.CompleteRound(_heroUIController.GetNickname());
     }
 
     [Command]
@@ -162,13 +139,24 @@ public class Hero : NetworkBehaviour
     [Command]
     public void CmdSetName(string name)
     {
-        Nickname = name;
+        _heroUIController.SetNickname(name);
     }
 
     [Command]
-    public void CmdPlayerWinnedStatus(bool isWin)
+    public void CmdPlayerWinnedStatus()
     {
-        SetWinnedStatus(isWin);
+        SetWinnedStatus();
+    }
+
+    [ClientRpc]
+    private void RpcStopPlayerInput()
+    {
+        IsStoppedInput = true;
+    }
+
+    private void SetUseAbility(bool canUseAbility)
+    {
+        IsUsedAbility = canUseAbility;
     }
 
     private void CameraRotate()
@@ -202,10 +190,5 @@ public class Hero : NetworkBehaviour
     private void PlayAnimationByType(HeroAnimationType typeAnimation)
     {
         _animationController.PlayAnimationByType(typeAnimation);
-    }
-
-    private void OnNicknameChanged(string oldName, string newName)
-    {
-        OnNicknameChangedEvent?.Invoke(Nickname);
     }
 }

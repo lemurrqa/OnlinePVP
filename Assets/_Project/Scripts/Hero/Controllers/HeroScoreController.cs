@@ -26,14 +26,14 @@ public class HeroScoreController : NetworkBehaviour
             _score = 3;
 
             if (_hero.isServer)
-                _hero.SetWinnedStatus(true);
+                _hero.SetWinnedStatus();
             else
-                _hero.CmdPlayerWinnedStatus(true);
+                _hero.CmdPlayerWinnedStatus();
         }
     }
 
-    private void OnChangedScore(int oldScore, int newScore)
+    private void OnChangedScore(int oldValue, int newValue)
     {
-        _hero.OnScoreChangedEvent?.Invoke(_score);
+        _hero.HeroUIController.OnScoreChangedEvent?.Invoke(_score);
     }
 }
