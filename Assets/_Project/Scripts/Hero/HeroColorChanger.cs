@@ -5,48 +5,45 @@ using UnityEngine;
 public class HeroColorChanger : NetworkBehaviour
 {
     [SerializeField] private SkinnedMeshRenderer _meshRenderer;
-    [SerializeField] private Material _changedMaterial;
-    [SerializeField] private int _changeTimeInSeconds = 3;
+    [SerializeField] private Material _damagableMaterial;
+    [SerializeField] private int _changingSeconds = 3;
 
     private Hero _hero;
     private Material _previousMaterial;
 
+    [SyncVar(hook = nameof(OnMaterialChanged))]
+    private bool _isMaterialChange;
+
     public void Init(Hero hero)
     {
         _hero = hero;
+        _previousMaterial = _meshRenderer.sharedMaterial;
     }
 
-    public void ChangeColor()
+    public void ChangeMaterial()
     {
         _hero.IsInvulnerable = true;
-
-        _previousMaterial = _meshRenderer.sharedMaterial;
-        _meshRenderer.sharedMaterial = _changedMaterial;
-
-        StartCoroutine(ChangedColorRoutine());
+        _isMaterialChange = true;
+        StartCoroutine(MaterialChangedRoutine());
     }
 
-    [Command]
-    public void CmdChangeColor()
+    private void SetDefaultMaterial()
     {
-        _hero.IsInvulnerable = true;
-
-        _previousMaterial = _meshRenderer.sharedMaterial;
-        _meshRenderer.sharedMaterial = _changedMaterial;
-
-        StartCoroutine(ChangedColorRoutine());
-    }
-
-    private void SetColorDefault()
-    {
-        _meshRenderer.sharedMaterial = _previousMaterial;
         _hero.IsInvulnerable = false;
+        _isMaterialChange = false;
     }
 
-    private IEnumerator ChangedColorRoutine()
+    private IEnumerator MaterialChangedRoutine()
     {
-        yield return new WaitForSeconds(_changeTimeInSeconds);
+        yield return new WaitForSeconds(_changingSeconds);
+        SetDefaultMaterial();
+    }
 
-        SetColorDefault();
+    private void OnMaterialChanged(bool oldMatIndex, bool newMatIndex)
+    {
+        if (_isMaterialChange)
+            _meshRenderer.sharedMaterial = _damagableMaterial;
+        else
+            _meshRenderer.sharedMaterial = _previousMaterial;
     }
 }

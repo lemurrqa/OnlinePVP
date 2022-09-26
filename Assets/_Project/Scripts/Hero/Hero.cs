@@ -24,13 +24,11 @@ public class Hero : NetworkBehaviour
     private HeroAnimationController _animationController;
     private HeroColorChanger _colorChanger;
     private HeroCameraRotator _heroCameraRotator;
-    private SceneUIController _sceneUIController;
     private PlayerInfoUI _heroInfoUI;
     private float _rotationSmoothRef;
 
     public HeroScoreController ScoreController => _scoreController;
     public HeroColorChanger ColorChanger => _colorChanger;
-    public SceneUIController SceneUIController => _sceneUIController;
 
     [SyncVar(hook = nameof(OnNicknameChanged))]
     public string Nickname;
@@ -44,14 +42,12 @@ public class Hero : NetworkBehaviour
     [SyncVar]
     public bool IsInvulnerable;
 
-    public Action OnColorChangedEvent;
     public Action<bool> OnUsingAbilityEvent;
     public Action<int> OnScoreChangedEvent;
     public Action<string> OnNicknameChangedEvent;
 
     private void Awake()
     {
-        _sceneUIController = FindObjectOfType<SceneUIController>(); //sorry,it wont happen again
         _colorChanger = GetComponent<HeroColorChanger>();
         _collisionController = GetComponent<HeroCollisionController>();
         _scoreController = GetComponent<HeroScoreController>();
@@ -59,8 +55,7 @@ public class Hero : NetworkBehaviour
 
     public override void OnStartClient()
     {
-        _heroInfoUI = SceneUIController.SpawnAndGetInfoPanel();
-
+        _heroInfoUI = SceneUIService.Instance.SpawnAndGetInfoPanel();
         _colorChanger.Init(this);
         _collisionController.Init(this);
         _scoreController.Init(this);
@@ -68,7 +63,6 @@ public class Hero : NetworkBehaviour
         _animationController = new HeroAnimationController(_animator);
         _abilityController = new HeroAbilityController(this);
 
-        OnColorChangedEvent = ColorChanger.ChangeColor;
         OnUsingAbilityEvent = SetUseAbility;
         OnNicknameChangedEvent = _heroInfoUI.OnPlayerNicknameChanged;
         OnScoreChangedEvent = _heroInfoUI.OnPlayerScoreChanged;
@@ -82,29 +76,31 @@ public class Hero : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         _heroCameraRotator = Instantiate(_heroCameraTemplate);
-
-        _heroInfoUI.SetLocalPlayer();
+        if (_heroInfoUI != null)
+            _heroInfoUI.SetLocalPlayer();
     }
 
     public override void OnStopClient()
     {
         ScoreController.ResetScore();
 
-        OnColorChangedEvent = null;
         OnUsingAbilityEvent = null;
         OnNicknameChangedEvent = null;
         OnScoreChangedEvent = null;
 
         if (_heroInfoUI != null)
-            _heroInfoUI.Hide();
+        {
+            Destroy(_heroInfoUI.gameObject);
+            NetworkServer.Destroy(_heroInfoUI.gameObject);
+        }
     }
 
     private void Update()
     {
-        if (!isLocalPlayer)
+        if (IsWin)
             return;
 
-        if (IsWin)
+        if (!isLocalPlayer)
             return;
 
         CameraRotate();
@@ -135,13 +131,12 @@ public class Hero : NetworkBehaviour
         ScoreController.ScoreIncrement();
     }
 
-    [Command]
-    public void CmdScoreIncrement()
+    public void ChangeColor()
     {
-        ScoreController.ScoreIncrement();
+        ColorChanger.ChangeMaterial();
     }
 
-    public void SetUseAbility(bool canUseAbility)
+    private void SetUseAbility(bool canUseAbility)
     {
         IsUsedAbility = canUseAbility;
     }
@@ -149,7 +144,25 @@ public class Hero : NetworkBehaviour
     public void SetWinnedStatus(bool isWin)
     {
         IsWin = isWin;
-        SceneUIController.CompleteRound(Nickname);
+        SceneUIService.Instance.CompleteRound(Nickname);
+    }
+
+    [Command]
+    public void CmdScoreIncrement()
+    {
+        ScoreController.ScoreIncrement();
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdChangeColor()
+    {
+        ColorChanger.ChangeMaterial();
+    }
+
+    [Command]
+    public void CmdSetName(string name)
+    {
+        Nickname = name;
     }
 
     [Command]
@@ -189,12 +202,6 @@ public class Hero : NetworkBehaviour
     private void PlayAnimationByType(HeroAnimationType typeAnimation)
     {
         _animationController.PlayAnimationByType(typeAnimation);
-    }
-
-    [Command]
-    public void CmdSetName(string name)
-    {
-        Nickname = name;
     }
 
     private void OnNicknameChanged(string oldName, string newName)

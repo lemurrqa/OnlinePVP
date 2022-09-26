@@ -5,7 +5,7 @@ public class HeroScoreController : NetworkBehaviour
     private Hero _hero;
 
     [SyncVar(hook = nameof(OnChangedScore))]
-    public int Score = 0;
+    private int _score = 0;
 
     public void Init(Hero hero)
     {
@@ -14,16 +14,16 @@ public class HeroScoreController : NetworkBehaviour
 
     public void ResetScore()
     {
-        Score = 0;
+        _score = 0;
     }
 
     public void ScoreIncrement()
     {
-        Score++;
+        _score++;
 
-        if (Score >= 3)
+        if (_score >= 3)
         {
-            Score = 3;
+            _score = 3;
 
             if (_hero.isServer)
                 _hero.SetWinnedStatus(true);
@@ -34,6 +34,6 @@ public class HeroScoreController : NetworkBehaviour
 
     private void OnChangedScore(int oldScore, int newScore)
     {
-        _hero.OnScoreChangedEvent?.Invoke(Score);
+        _hero.OnScoreChangedEvent?.Invoke(_score);
     }
 }

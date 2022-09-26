@@ -3,16 +3,14 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneUIController : Singleton<SceneUIController>
+public class SceneUIService : Singleton<SceneUIService>
 {
     [SerializeField] private PlayerInfoUI _heroInfoTemplate;
-    [SerializeField] private Transform _heroInfoParent;
     [SerializeField] private CompleteScreen _completeScreen;
-
-    private NetworkIdentity[] _networkIdents;
+    [SerializeField] private Transform _heroInfoParent;
 
     [SyncVar(hook = nameof(OnChangedWinnedNickname))]
-    public string WinnedNickname;
+    private string _winnedNickname;
 
     private void Start()
     {
@@ -22,13 +20,12 @@ public class SceneUIController : Singleton<SceneUIController>
     public PlayerInfoUI SpawnAndGetInfoPanel()
     {
         var playerUIObject = Instantiate(_heroInfoTemplate, _heroInfoParent);
-        NetworkServer.Spawn(playerUIObject.gameObject);
         return playerUIObject;
     }
 
     public void CompleteRound(string winnedNickname)
     {
-        WinnedNickname = winnedNickname;
+        _winnedNickname = winnedNickname;
 
         StartCoroutine(HideCompleteScreenRoutine());
         RpcShowCompleteScreen();
@@ -46,14 +43,14 @@ public class SceneUIController : Singleton<SceneUIController>
         NetworkManager.singleton.ServerChangeScene(SceneManager.GetActiveScene().name);
     }
 
-    private void OnChangedWinnedNickname(string oldNick, string newNick)
-    {
-        _completeScreen.TextWinnedNickname.text = WinnedNickname + " winned!";
-    }
-
     private IEnumerator HideCompleteScreenRoutine()
     {
         yield return new WaitForSeconds(5f);
         Restart();
+    }
+
+    private void OnChangedWinnedNickname(string oldNick, string newNick)
+    {
+        _completeScreen.TextWinnedNickname.text = _winnedNickname + " winned!";
     }
 }
