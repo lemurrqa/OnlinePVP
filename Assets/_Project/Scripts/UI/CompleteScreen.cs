@@ -4,9 +4,12 @@ using UnityEngine;
 
 public class CompleteScreen : NetworkBehaviour
 {
-    [SerializeField] private TMP_Text _textWinnedNickname;
+    [SerializeField] private TMP_Text _textWinnerNickname;
 
-    public TMP_Text TextWinnedNickname => _textWinnedNickname;
+    public void SetTextWinnerNicknameText(string nickname)
+    {
+        _textWinnerNickname.text = nickname + " winned!";
+    }
 
     public void Show()
     {

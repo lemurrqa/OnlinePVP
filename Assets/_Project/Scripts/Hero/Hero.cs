@@ -4,25 +4,20 @@ using UnityEngine;
 
 public class Hero : NetworkBehaviour
 {
-    [SerializeField] private Animator _animator;
-    [SerializeField] private HeroCameraRotator _heroCameraTemplate;
-    [Header("Position variables")]
-    [SerializeField] private float _speedMovement = 4f;
-    [SerializeField] private float _speedRotation = 5f;
-    [SerializeField] private float _startPosY = 0.3f;
+    [SerializeField] private HeroCamera _heroCameraTemplate;
 
-    private HeroScoreController _scoreController;
+    private HeroCamera _heroCamera;
+    private IInputService _inputService;
+    private Animator _animator;
+    private HeroScore _scoreController;
+    private HeroView _heroView;
+    private HeroMovementController _movementController;
     private HeroCollisionController _collisionController;
-    private HeroAbilityController _abilityController;
     private HeroAnimationController _animationController;
-    private HeroUIController _heroUIController;
-    private HeroColorChanger _colorChanger;
-    private HeroCameraRotator _heroCameraRotator;
-    private float _rotationSmoothRef;
+    private HeroAbilityController _abilityController;
 
-    public HeroScoreController ScoreController => _scoreController;
-    public HeroUIController HeroUIController => _heroUIController;
-    public HeroColorChanger ColorChanger => _colorChanger;
+    public HeroView HeroView => _heroView;
+    public HeroScore ScoreController => _scoreController;
 
     [SyncVar]
     public bool IsUsedAbility;
@@ -30,79 +25,53 @@ public class Hero : NetworkBehaviour
     [SyncVar]
     public bool IsInvulnerable;
 
-    [SyncVar]
-    public bool IsStoppedInput;
-
     public Action<bool> OnUsingAbilityEvent;
 
     private void Awake()
     {
-        _colorChanger = GetComponent<HeroColorChanger>();
-        _collisionController = GetComponent<HeroCollisionController>();
-        _scoreController = GetComponent<HeroScoreController>();
-        _heroUIController = GetComponent<HeroUIController>();
+        _inputService = Mediator.GetInputServiceFunc?.Invoke();
 
-        _heroUIController.Init(this);
+        _animator = GetComponent<Animator>();
+        _animationController = new HeroAnimationController();
+        _movementController = new HeroMovementController();
+        _abilityController = new HeroAbilityController();
+        _collisionController = GetComponent<HeroCollisionController>();
+        _heroView = GetComponent<HeroView>();
+        _scoreController = GetComponent<HeroScore>();
     }
 
-    private void Update()
+    private void OnDestroy()
     {
-        if (IsStoppedInput)
-            return;
-
-        if (!isLocalPlayer)
-            return;
-
-        CameraRotate();
-
-        if (IsUsedAbility)
-            return;
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            _abilityController.StartAbility(AbilityType.Blink);
-            PlayAnimationByType(HeroAnimationType.Blink);
-            return;
-        }
-
-        var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-
-        Rotate(input);
-        Move(input);
-
-        if (input != Vector2.zero)
-            PlayAnimationByType(HeroAnimationType.Run);
-        else
-            PlayAnimationByType(HeroAnimationType.Idle);
+        _animationController.OnDestroy();
+        _abilityController.OnDestroy();
+        _movementController.OnDestroy();
     }
 
     public override void OnStartClient()
     {
         CmdSetName("Player" + UnityEngine.Random.Range(100, 999));
 
-        _heroUIController.StartClient();
-
-        _colorChanger.Init(this);
         _collisionController.Init(this);
         _scoreController.Init(this);
 
-        _animationController = new HeroAnimationController(_animator);
-        _abilityController = new HeroAbilityController(this);
-
         OnUsingAbilityEvent = SetUseAbility;
-
-        transform.position = new Vector3(transform.position.x, _startPosY, transform.position.z);
+        
     }
 
     public override void OnStartLocalPlayer()
     {
-        _heroUIController.StartLocalPlayer();
-        _heroCameraRotator = Instantiate(_heroCameraTemplate);
+        _heroCamera = Instantiate(_heroCameraTemplate);
+
+        _heroCamera.Init(transform, _inputService);
+        _animationController.Init(_animator, _inputService);
+        _movementController.Init(this, _heroCamera, _inputService);
+        _abilityController.Init(this, _inputService);
+
+        _movementController.SetStartPosition();
     }
 
     public override void OnStopClient()
     {
-        _heroUIController.StopClient();
         _scoreController.ResetScore();
 
         OnUsingAbilityEvent = null;
@@ -115,13 +84,14 @@ public class Hero : NetworkBehaviour
 
     public void ChangeColor()
     {
-        ColorChanger.ChangeMaterial();
+        IsInvulnerable = true;
+        _heroView.ColorChanger.StartChange();
     }
 
     public void SetWinnedStatus()
     {
-        RpcStopPlayerInput();
-        SceneUIService.Instance.CompleteRound(_heroUIController.GetNickname());
+        var levelResultService = Mediator.GetLevelResultServiceFunc?.Invoke();
+        levelResultService.Complete(_heroView.Nickname);
     }
 
     [Command]
@@ -133,13 +103,13 @@ public class Hero : NetworkBehaviour
     [Command(requiresAuthority = false)]
     public void CmdChangeColor()
     {
-        ColorChanger.ChangeMaterial();
+        ChangeColor();
     }
 
     [Command]
     public void CmdSetName(string name)
     {
-        _heroUIController.SetNickname(name);
+        _heroView.SetNickname(name);
     }
 
     [Command]
@@ -148,47 +118,13 @@ public class Hero : NetworkBehaviour
         SetWinnedStatus();
     }
 
-    [ClientRpc]
-    private void RpcStopPlayerInput()
-    {
-        IsStoppedInput = true;
-    }
-
     private void SetUseAbility(bool canUseAbility)
     {
         IsUsedAbility = canUseAbility;
     }
 
-    private void CameraRotate()
-    {
-        if (_heroCameraRotator == null)
-            return;
-
-        _heroCameraRotator.Rotate(transform);
-    }
-
-    private void Move(Vector2 input)
-    {
-        var newPosition = transform.forward * (_speedMovement * input.normalized.sqrMagnitude) * Time.deltaTime;
-        transform.Translate(newPosition, Space.World);
-    }
-
-    private void Rotate(Vector2 input)
-    {
-        if (input.normalized == Vector2.zero)
-            return;
-
-        var speed = Time.deltaTime * _speedRotation;
-        var aTan = Mathf.Atan2(input.normalized.x, input.normalized.y) * Mathf.Rad2Deg;
-
-        var targetRotation = aTan + _heroCameraRotator.transform.eulerAngles.y;
-
-        transform.eulerAngles =
-            Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref _rotationSmoothRef, speed) * Vector3.up;
-    }
-
-    private void PlayAnimationByType(HeroAnimationType typeAnimation)
-    {
-        _animationController.PlayAnimationByType(typeAnimation);
-    }
+    //private void PlayAnimationByType(HeroAnimationType typeAnimation)
+    //{
+    //    _animationController.PlayAnimationByType(typeAnimation);
+    //}
 }

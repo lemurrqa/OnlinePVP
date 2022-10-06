@@ -20,9 +20,8 @@ public class HeroColorChanger : NetworkBehaviour
         _previousMaterial = _meshRenderer.sharedMaterial;
     }
 
-    public void ChangeMaterial()
+    public void StartChange()
     {
-        _hero.IsInvulnerable = true;
         _isMaterialChange = true;
         StartCoroutine(MaterialChangedRoutine());
     }

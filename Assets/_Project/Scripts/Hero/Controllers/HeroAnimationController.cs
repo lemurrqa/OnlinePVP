@@ -10,27 +10,38 @@ public enum HeroAnimationType
 public class HeroAnimationController
 {
     private Animator _animator;
+    private IInputService _inputService;
 
-    public HeroAnimationController(Animator animator)
+    public void Init(Animator animator, IInputService inputService)
     {
         _animator = animator;
+        _inputService = inputService;
+
+        _inputService.OnLeftMouseButtonInputEvent += PlayAnimationBlink;
     }
 
-    public void PlayAnimationByType(HeroAnimationType typeAnimation)
+    public void OnDestroy()
     {
-        switch (typeAnimation)
-        {
-            case HeroAnimationType.Run:
-                _animator.Play("Run");
-                break;
-            case HeroAnimationType.Idle:
-                _animator.Play("Idle");
-                break;
-            case HeroAnimationType.Blink:
-                _animator.Play("Fight2");
-                break;
-            default:
-                break;
-        }
+        _inputService.OnLeftMouseButtonInputEvent -= PlayAnimationBlink;
+    }
+
+    //public void PlayAnimationByType(HeroAnimationType typeAnimation)
+    //{
+    //    switch (typeAnimation)
+    //    {
+    //        case HeroAnimationType.Run:
+    //            _animator.SetTrigger("Run");
+    //            break;
+    //        case HeroAnimationType.Blink:
+    //            _animator.SetTrigger("Blink");
+    //            break;
+    //        default:
+    //            break;
+    //    }
+    //}
+
+    private void PlayAnimationBlink()
+    {
+        _animator.SetTrigger("Blink");
     }
 }

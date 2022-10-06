@@ -1507,9 +1507,9 @@ GameObject:
   - component: {fileID: 7722102121061533733}
   - component: {fileID: 9207049592063048942}
   - component: {fileID: 519260308808573935}
-  - component: {fileID: -1024398676673168271}
   - component: {fileID: -7915709450988631709}
   - component: {fileID: 6189692840091000708}
+  - component: {fileID: 8802024284201033853}
   m_Layer: 0
   m_Name: Hero
   m_TagString: Untagged
@@ -1685,15 +1685,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  _animator: {fileID: 4112099153509006707}
   _heroCameraTemplate: {fileID: 8593784319810106358, guid: b013630e2de68f3488c1710d94cd970e, type: 3}
-  _speedMovement: 4
-  _speedRotation: 5
-  _startPosY: 0.3
-  Nickname: 
   IsUsedAbility: 0
   IsInvulnerable: 0
-  IsStoppedInput: 0
 --- !u!114 &519260308808573935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1711,20 +1705,6 @@ MonoBehaviour:
   _meshRenderer: {fileID: 8125182796227033887}
   _damagableMaterial: {fileID: 2100000, guid: 09ea338b20e761f45825ff5472497a60, type: 2}
   _changingSeconds: 3
---- !u!114 &-1024398676673168271
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5125483312446499225}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe5881ce1dee2ae4f9614cf4f5ee0007, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncMode: 0
-  syncInterval: 0.1
 --- !u!114 &-7915709450988631709
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1751,6 +1731,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2947c28c5ec3c6f42996170a8acb40b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+--- !u!114 &8802024284201033853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5125483312446499225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe5881ce1dee2ae4f9614cf4f5ee0007, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
 --- !u!1 &5154651489561387082
 GameObject:
   m_ObjectHideFlags: 0

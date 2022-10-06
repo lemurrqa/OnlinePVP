@@ -182,7 +182,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 29144247}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -213,7 +213,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 337152911}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -247,7 +247,7 @@ GameObject:
   - component: {fileID: 371452400}
   - component: {fileID: 371452399}
   m_Layer: 5
-  m_Name: ConnectCanvas
+  m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -509,7 +509,7 @@ MonoBehaviour:
   spawnPrefabs:
   - {fileID: 382986770806008040, guid: d551c068ab780474da969305442be2a0, type: 3}
   showRoomGUI: 1
-  minPlayers: 2
+  minPlayers: 1
   roomPlayerPrefab: {fileID: 5737847188475670225, guid: a24edf7bc04d3ed418ca863ec5b4629c, type: 3}
   RoomScene: Assets/_Project/Scenes/2_Lobby.unity
   GameplayScene: Assets/_Project/Scenes/Main.unity

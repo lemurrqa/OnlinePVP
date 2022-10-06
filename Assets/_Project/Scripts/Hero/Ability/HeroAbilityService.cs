@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using UnityEngine;
 
@@ -11,16 +10,10 @@ public class HeroAbilityService : MonoBehaviour
 {
     [SerializeField] private HeroAblilityData _abilityData;
 
-    public static Func<AbilityType, HeroAbility> GetAbilityFunction;
-
-    private void Awake()
-    {
-        GetAbilityFunction = GetAbilityByType;
-    }
-
     public HeroAbility GetAbilityByType(AbilityType type)
     {
         HeroAbility ability = null;
+
         var data = _abilityData.data.Where(abil => abil.type == type).FirstOrDefault();
 
         switch (type)
