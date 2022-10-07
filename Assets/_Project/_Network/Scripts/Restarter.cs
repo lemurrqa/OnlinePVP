@@ -3,8 +3,10 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class LevelRestarter : NetworkBehaviour
+public class Restarter : NetworkBehaviour
 {
+    [SerializeField] private float _secondsBeforeRestart = 5f;
+
     public void RestartLevel()
     {
         StartCoroutine(RestartRoutine());
@@ -18,7 +20,7 @@ public class LevelRestarter : NetworkBehaviour
 
     private IEnumerator RestartRoutine()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(_secondsBeforeRestart);
         Restart();
     }
 }

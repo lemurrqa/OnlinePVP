@@ -11,9 +11,9 @@ public class HeroMaterialChanger : NetworkBehaviour
     private Material _previousMaterial;
 
     [SyncVar(hook = nameof(OnMaterialChanged))]
-    private bool _isMaterialChange;
+    private bool _canMaterialChange;
 
-    public bool IsMaterialChange => _isMaterialChange;
+    public bool CanMaterialChange => _canMaterialChange;
 
     public void Init(Hero hero)
     {
@@ -23,13 +23,13 @@ public class HeroMaterialChanger : NetworkBehaviour
     [Command(requiresAuthority = false)]
     public void CmdStartChange()
     {
-        _isMaterialChange = true;
+        _canMaterialChange = true;
         StartCoroutine(MaterialChangedRoutine());
     }
 
     public void StopChange()
     {
-        _isMaterialChange = false;
+        _canMaterialChange = false;
     }
 
     private IEnumerator MaterialChangedRoutine()
@@ -40,7 +40,7 @@ public class HeroMaterialChanger : NetworkBehaviour
 
     private void OnMaterialChanged(bool oldMatIndex, bool newMatIndex)
     {
-        if (_isMaterialChange)
+        if (_canMaterialChange)
             _meshRenderer.sharedMaterial = _damagableMaterial;
         else
             _meshRenderer.sharedMaterial = _previousMaterial;

@@ -7,8 +7,9 @@ public class MainInstaller : MonoInstaller
     [SerializeField] private InputService _inputService;
     [SerializeField] private ScoreInfoViewService _scoreInfoViewService;
     [SerializeField] private LevelResultService _resultService;
-    [SerializeField] private LevelRestarter _levelRestarter;
+    [SerializeField] private Restarter _levelRestarter;
     [SerializeField] private HeroAbilityService _abilityService;
+    [SerializeField] private CompleteScreen _completeScreen;
 
     public override void InstallBindings()
     {
@@ -17,6 +18,7 @@ public class MainInstaller : MonoInstaller
         BindResultService();
         BindLevelRestarter();
         BindAbilityService();
+        BindCompleteScreen();
         BindMediator();
     }
 
@@ -42,11 +44,16 @@ public class MainInstaller : MonoInstaller
 
     private void BindLevelRestarter()
     {
-        Container.Bind<LevelRestarter>().FromInstance(_levelRestarter).AsSingle();
+        Container.Bind<Restarter>().FromInstance(_levelRestarter).AsSingle();
     }
 
     private void BindAbilityService()
     {
         Container.Bind<HeroAbilityService>().FromInstance(_abilityService).AsSingle();
+    }
+    
+    private void BindCompleteScreen()
+    {
+        Container.Bind<CompleteScreen>().FromInstance(_completeScreen).AsSingle();
     }
 }

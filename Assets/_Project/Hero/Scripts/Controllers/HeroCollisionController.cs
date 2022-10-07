@@ -4,12 +4,10 @@ using UnityEngine;
 public class HeroCollisionController : NetworkBehaviour
 {
     private Hero _hero;
-    private NetworkRoomManagerCustom _networkRoomManagerCustom;
 
     public void Init(Hero hero)
     {
         _hero = hero;
-        _networkRoomManagerCustom = NetworkManager.singleton as NetworkRoomManagerCustom;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -22,27 +20,11 @@ public class HeroCollisionController : NetworkBehaviour
 
         if (other.gameObject.TryGetComponent(out Hero targetHero))
         {
-            if (targetHero.MaterialChanger.IsMaterialChange)
+            if (targetHero.MaterialChanger.CanMaterialChange)
                 return;
 
-            _hero.ScoreController.CmdScoreIncrement();
+            _hero.HeroScore.CmdScoreIncrement();
             targetHero.MaterialChanger.CmdStartChange();
-
-            //if (_hero.isServer)
-            //    _hero.ScoreIncrement();
-            //else
-            //    _hero.CmdScoreIncrement();
-
-            //if (targetHero.isServer)
-            //    targetHero.ChangeColor();
-            //else
-            //    targetHero.CmdChangeColor();
-
-
-            //if (targetHero.isServer)
-            //    targetHero.StateMachine.Enter<HeroStateDamagable>();
-            //else
-            //    targetHero.CmdSetStateDamagable();
         }
     }
 }
